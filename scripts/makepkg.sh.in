@@ -385,7 +385,13 @@ run_function_safe() {
 	restoretrap=$(trap -p ERR)
 	trap "error_function '$1'" ERR
 
+	wavystats --record --root / --target "$startdir/pre-$1-stat.json"
+
 	run_function "$1"
+
+	wavystats --record --root / --target "$startdir/post-$1-stat.json"
+	wavystats --diff --pre "$startdir/pre-$1-stat.json" --post "$startdir/post-$1-stat.json" --target "$startdir/diff-$1.json"
+	wavystats --find-owners --diff-file "$startdir/diff-$1.json" --target "$startdir/owners-$1.json"
 
 	trap - ERR
 	eval "$restoretrap"
